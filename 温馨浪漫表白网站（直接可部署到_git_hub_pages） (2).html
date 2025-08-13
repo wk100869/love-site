@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>给你的小小告白</title>
+  <meta name="description" content="一个温馨浪漫的表白小站" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>💖</text></svg>">
+  <style>
+    :root {
+      --pink: #ff7aa2;
+      --rose: #ff5c8a;
+      --dark: #1a131b;
+      --light: #fff7fb;
+      --gold: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: #2b2230;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Hiragino Sans GB", "PingFang SC", "Noto Sans CJK SC", "Microsoft Yahei", sans-serif;
+      background: radial-gradient(1200px 800px at 70% -10%, rgba(255, 170, 196, 0.4), transparent),
+                  radial-gradient(1000px 700px at -10% 40%, rgba(255, 214, 230, 0.5), transparent),
+                  linear-gradient(180deg, #fff5fa, #ffeaf3 60%, #ffe1ee);
+      overflow-x: hidden;
+    }
+    /* Floating hearts */
+    .hearts {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      overflow: hidden;
+    }
+    .heart {
+      position: absolute; width: 14px; height: 14px; transform: rotate(45deg);
+      background: var(--rose); opacity: .18; border-radius: 2px;
+      animation: float 12s linear infinite;
+    }
+    .heart::before, .heart::after{
+      content: ""; position: absolute; width: 100%; height: 100%; background: inherit; border-radius: 50%;
+    }
+    .heart::before{ left:-50%; }
+    .heart::after{ top:-50%; }
+    @keyframes float {
+      0% { transform: translateY(110vh) rotate(45deg) scale(.8); }
+      100% { transform: translateY(-20vh) rotate(45deg) scale(1.1); }
+    }
+
+    /* Layout */
+    .wrap { position: relative; z-index: 1; }
+    header.hero{
+      min-height: 86vh; display:flex; align-items:center; justify-content:center; text-align:center; padding: 64px 20px 24px;
+    }
+    .card {
+      background: rgba(255,255,255,.75);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 162, 191, .4);
+      border-radius: 24px; padding: 28px; box-shadow: 0 20px 50px rgba(255, 92, 138, .18);
+    }
+    h1 { font-weight: 800; letter-spacing: .5px; line-height: 1.2; margin: 0 0 8px; font-size: clamp(26px, 5vw, 48px); }
+    .subtitle { font-size: clamp(14px, 2.4vw, 18px); color:#7a5b67; }
+    .btns { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-top: 20px; }
+    .btn {
+      appearance:none; border:none; cursor:pointer; border-radius: 999px; padding: 12px 18px; font-weight: 700;
+      background: linear-gradient(135deg, var(--rose), var(--pink)); color: white; box-shadow: 0 10px 20px rgba(255, 92, 138, .35);
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(255, 92, 138, .45); }
+    .btn.ghost { background: white; color: #ff4d86; border: 2px solid #ffc4d7; }
+
+    /* Sections */
+    section { padding: 40px 18px; }
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    .grid { display:grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .photo { position: relative; overflow:hidden; border-radius: 16px; aspect-ratio: 4/3; background:#fff; border: 1px solid #ffe1ec; }
+    .photo img { width:100%; height:100%; object-fit: cover; transition: transform .6s ease; }
+    .photo:hover img { transform: scale(1.06); }
+
+    .timeline { position:relative; padding-left: 22px; }
+    .timeline::before{ content:""; position:absolute; left:8px; top:0; bottom:0; width: 2px; background: linear-gradient(var(--rose), transparent); }
+    .tl-item { margin: 14px 0; padding: 12px 14px 12px 14px; background: #fff; border-radius: 14px; border: 1px solid #ffd1e2; box-shadow: 0 8px 24px rgba(255,92,138,.12); }
+    .tl-item b { color:#ff2f78 }
+
+    .counter { display:flex; gap: 10px; flex-wrap:wrap; justify-content:center; font-variant-numeric: tabular-nums; }
+    .num { background:#fff; padding: 12px 14px; border-radius: 12px; border:1px solid #ffe1ec; min-width:84px; text-align:center; }
+    .num big { display:block; font-size: 28px; font-weight: 800; color:#ff2f78; }
+
+    footer { text-align:center; padding: 28px 16px 60px; color:#8a6b76; }
+
+    /* Modal */
+    dialog { border:none; border-radius: 20px; padding: 0; width: min(680px, 92vw); box-shadow: 0 30px 80px rgba(0,0,0,.2); }
+    dialog::backdrop { background: rgba(0,0,0,.25); backdrop-filter: blur(2px); }
+    .modal-head { padding: 20px 22px 0; }
+    .modal-body { padding: 4px 22px 22px; }
+
+    /* Floating play badge */
+    .music-floating { position: fixed; right: 14px; bottom: 14px; z-index: 3; display:flex; align-items:center; gap:10px; }
+    .disk { width: 46px; height: 46px; border-radius: 50%; background: conic-gradient(from 0deg, #ff9abb, #fff, #ff9abb); display:grid; place-items:center; box-shadow:0 8px 20px rgba(255, 92, 138, .28); animation: spin 6s linear infinite paused; }
+    .disk::after { content:""; width: 14px; height: 14px; background:#111; border-radius: 50%; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .badge { background: #fff; border: 2px solid #ffc8db; padding: 8px 12px; border-radius: 999px; font-weight: 700; color:#ff2f78; }
+    .hide { display:none !important; }
+
+    /* Canvas fireworks */
+    #fw { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+
+    /* Small */
+    @media (min-width: 768px){ .card { padding: 36px 44px; } }
+  </style>
+</head>
+<body>
+  <canvas id="fw"></canvas>
+  <div class="hearts" id="hearts"></div>
+
+  <div class="wrap">
+    <header class="hero">
+      <div class="card">
+        <div class="subtitle">写给 <span id="toName">亲爱的你</span> 的第 <span id="dayCount">0</span> 天</div>
+        <h1 id="headline">我想把全世界最温柔的风<br/>都吹向你</h1>
+        <p class="subtitle">从 <span id="startDateText">2024-02-14</span> 到现在，我们一起经历了无数小确幸。<br>今天，想把这些喜欢都认真说给你听。</p>
+        <div class="btns">
+          <button class="btn" id="btnPlay">▶︎ 播放音乐</button>
+          <button class="btn ghost" id="btnLetter">💌 给你的一封信</button>
+          <button class="btn ghost" id="btnStory">📖 我们的故事</button>
+          <button class="btn" id="btnAsk">💍 我愿意！</button>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="container">
+        <h2 style="margin:0 0 10px">我们的回忆相册</h2>
+        <p class="subtitle" style="margin:0 0 18px">替换图片为你们的合照即可（./images/1.jpg ...）</p>
+        <div class="grid">
+          <figure class="photo"><img src="https://images.unsplash.com/photo-1522673607200-164d1b6ce486?q=80&w=1600&auto=format&fit=crop" alt="记忆 1"></figure>
+          <figure class="photo"><img src="https://images.unsplash.com/photo-1520975928316-56c6c6bf88c9?q=80&w=1600&auto=format&fit=crop" alt="记忆 2"></figure>
+          <figure class="photo"><img src="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1600&auto=format&fit=crop" alt="记忆 3"></figure>
+          <figure class="photo"><img src="https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=1600&auto=format&fit=crop" alt="记忆 4"></figure>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 style="margin:0 0 10px">小小时间线</h2>
+        <div class="timeline" id="timeline">
+          <div class="tl-item"><b>第一次相遇</b> · 在那家咖啡店，我假装不经意，其实心里已经小鹿乱撞。</div>
+          <div class="tl-item"><b>第一张合照</b> · 终于把喜欢拍了下来，像把春天收入了镜头。</div>
+          <div class="tl-item"><b>第一次牵手</b> · 指尖传来的是全世界的安定。</div>
+          <div class="tl-item"><b>我们的纪念日</b> · 约定在每一年的这一天，都给彼此一个小惊喜。</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 style="margin:0 0 10px">甜蜜倒数</h2>
+        <p class="subtitle" style="margin:0 0 16px">距离下一次纪念日还有：</p>
+        <div class="counter" id="counter">
+          <div class="num"><small>Days</small><big id="cDay">00</big></div>
+          <div class="num"><small>Hours</small><big id="cHour">00</big></div>
+          <div class="num"><small>Minutes</small><big id="cMin">00</big></div>
+          <div class="num"><small>Seconds</small><big id="cSec">00</big></div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>Made with 💖 for <span id="footerName">You</span> · <span id="year"></span></div>
+    </footer>
+  </div>
+
+  <!-- Love Letter Modal -->
+  <dialog id="letterModal">
+    <div class="modal-head">
+      <h3 style="margin:12px 0 6px">写给你的话</h3>
+    </div>
+    <div class="modal-body">
+      <div class="subtitle">可以在源码里自由修改这段文字~</div>
+      <div class="card" style="margin-top:12px">
+        <p id="letterText" style="margin:0; line-height:1.9">
+          我喜欢你，喜欢和你走在同一条街，喜欢和你看同一场日落。<br>
+          我们不用很厉害的情话，只要认认真真的一起生活。<br>
+          未来很长，我都想和你慢慢看。
+        </p>
+      </div>
+      <div class="btns" style="justify-content:flex-end">
+        <button class="btn ghost" id="closeLetter">关闭</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Story Modal -->
+  <dialog id="storyModal">
+    <div class="modal-head">
+      <h3 style="margin:12px 0 6px">我们的故事</h3>
+    </div>
+    <div class="modal-body">
+      <div class="card" style="margin-top:12px">
+        <ol style="margin:0; padding-left: 18px; line-height: 1.9">
+          <li>2024-02-14 · 认识你，是我的小幸运。</li>
+          <li>2024-05-20 · 彼此说出那句喜欢。</li>
+          <li>2024-08-08 · 第一次旅行，原来世界真的很温柔。</li>
+          <li>2025-02-14 · 新的开始，每一天都更想你一点点。</li>
+        </ol>
+      </div>
+      <div class="btns" style="justify-content:flex-end">
+        <button class="btn ghost" id="closeStory">关闭</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Music floating control -->
+  <div class="music-floating" id="musicCtl">
+    <div class="disk" id="disk"></div>
+    <button class="badge" id="badge">点击播放</button>
+  </div>
+
+  <audio id="bgm" preload="auto" loop>
+    <!-- 首选：免版权 BGM（来自 Pixabay 的直链）。若无法播放，请把 music.mp3 放在同目录。 -->
+    <source src="https://cdn.pixabay.com/download/audio/2021/11/23/audio_9f2d2d3b3e.mp3?filename=romantic-piano-ambient-110188.mp3" type="audio/mpeg">
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    // ====== 基本个性化（按需修改） ======
+    const CONFIG = {
+      toName: '亲爱的你',       // 显示在顶部与页脚
+      startDate: '2024-02-14',  // 在一起的日期（YYYY-MM-DD）
+      nextAnniv: '2026-02-14',  // 下一次纪念日（YYYY-MM-DD）
+      headline: '我想把全世界最温柔的风\n都吹向你',
+    };
+
+    // ====== DOM 引用 ======
+    const $ = (s)=>document.querySelector(s);
+    const hearts = $('#hearts');
+    const bgm = $('#bgm');
+    const disk = $('#disk');
+    const badge = $('#badge');
+
+    // 文案与日期初始化
+    $('#toName').textContent = CONFIG.toName;
+    $('#footerName').textContent = CONFIG.toName;
+    $('#startDateText').textContent = CONFIG.startDate;
+    $('#headline').innerHTML = CONFIG.headline.replace(/\n/g,'<br>');
+    $('#year').textContent = new Date().getFullYear();
+
+    function daysFrom(d){
+      const s = new Date(d + 'T00:00:00');
+      const ms = Date.now() - s.getTime();
+      return Math.floor(ms / 86400000);
+    }
+    $('#dayCount').textContent = daysFrom(CONFIG.startDate);
+
+    // 甜蜜倒数
+    function tickCountdown(){
+      const end = new Date(CONFIG.nextAnniv + 'T00:00:00');
+      let diff = Math.max(0, Math.floor((end - Date.now()) / 1000));
+      const d = Math.floor(diff / 86400); diff -= d*86400;
+      const h = Math.floor(diff / 3600); diff -= h*3600;
+      const m = Math.floor(diff / 60); const s = diff - m*60;
+      const pad = (n)=>String(n).padStart(2,'0');
+      $('#cDay').textContent = pad(d);
+      $('#cHour').textContent = pad(h);
+      $('#cMin').textContent = pad(m);
+      $('#cSec').textContent = pad(s);
+    }
+    setInterval(tickCountdown, 1000); tickCountdown();
+
+    // ====== 浮动小心心 ======
+    function spawnHeart(){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      const size = 10 + Math.random()*18; // px
+      h.style.width = h.style.height = size + 'px';
+      h.style.left = (Math.random()*100) + 'vw';
+      h.style.animationDuration = (10 + Math.random()*8) + 's';
+      h.style.opacity = (.10 + Math.random()*0.18).toFixed(2);
+      hearts.appendChild(h);
+      setTimeout(()=> h.remove(), 16000);
+    }
+    for(let i=0;i<28;i++) setTimeout(spawnHeart, i*220);
+    setInterval(spawnHeart, 900);
+
+    // ====== 音乐控制（自动播放需用户交互） ======
+    let playing = false;
+    async function playMusic(){
+      try{
+        await bgm.play();
+        playing = true;
+        disk.style.animationPlayState = 'running';
+        badge.textContent = '正在播放';
+      }catch(err){
+        console.log('Autoplay blocked:', err);
+      }
+    }
+    function pauseMusic(){ bgm.pause(); playing=false; disk.style.animationPlayState='paused'; badge.textContent='点击播放'; }
+
+    $('#btnPlay').addEventListener('click', ()=> playing? pauseMusic() : playMusic());
+    badge.addEventListener('click', ()=> playing? pauseMusic() : playMusic());
+    document.addEventListener('visibilitychange', ()=> { if(document.hidden) pauseMusic(); });
+
+    // ====== Modal ======
+    const letterModal = $('#letterModal');
+    const storyModal = $('#storyModal');
+    $('#btnLetter').onclick = () => letterModal.showModal();
+    $('#closeLetter').onclick = () => letterModal.close();
+    $('#btnStory').onclick = () => storyModal.showModal();
+    $('#closeStory').onclick = () => storyModal.close();
+
+    // ====== 求婚按钮 & 烟花 ======
+    const fw = document.getElementById('fw');
+    const ctx = fw.getContext('2d');
+    let W,H; function resize(){ W = fw.width = innerWidth; H = fw.height = innerHeight; }
+    addEventListener('resize', resize); resize();
+
+    function rand(n){ return Math.random()*n; }
+    class Particle{
+      constructor(x,y,angle,speed,color){ Object.assign(this,{x,y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, life:60+rand(30), color}); }
+      step(){ this.vx *= .99; this.vy = this.vy*.99 + 0.15; this.x+=this.vx; this.y+=this.vy; this.life--; }
+      draw(){ ctx.globalAlpha = Math.max(this.life/90,0); ctx.beginPath(); ctx.arc(this.x,this.y,2,0,6.28); ctx.fillStyle=this.color; ctx.fill(); }
+    }
+    const particles = [];
+    function boom(x,y){
+      const colors = ['#ff5c8a','#ffd166','#ff85a1','#ffffff'];
+      for(let i=0;i<180;i++){
+        const a = rand(Math.PI*2), s = 1.5+rand(4), c = colors[i%colors.length];
+        particles.push(new Particle(x,y,a,s,c));
+      }
+      // 小提示
+      const msg = document.createElement('div');
+      msg.textContent = '谢谢你说愿意 ❤';
+      Object.assign(msg.style, { position:'fixed', left:'50%', top:'46%', transform:'translate(-50%,-50%)', padding:'10px 14px', background:'#fff', border:'1px solid #ffd1e2', borderRadius:'999px', color:'#ff2f78', fontWeight:'800', zIndex:4, boxShadow:'0 10px 30px rgba(255,92,138,.25)'});
+      document.body.appendChild(msg); setTimeout(()=> msg.remove(), 1600);
+    }
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      for(let i=particles.length-1;i>=0;i--){ const p = particles[i]; p.step(); p.draw(); if(p.life<=0) particles.splice(i,1); }
+      requestAnimationFrame(draw);
+    } draw();
+
+    function ask(){
+      playMusic();
+      boom(innerWidth/2, innerHeight/2);
+    }
+    document.getElementById('btnAsk').addEventListener('click', ask);
+
+    // ====== 一点点细节 ======
+    // 首次交互后尝试播放
+    window.addEventListener('click', function initOnce(){ playMusic(); window.removeEventListener('click', initOnce); }, { once:true });
+  </script>
+</body>
+</html>
